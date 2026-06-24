@@ -6,13 +6,13 @@ pipeline {
 
     stages {
         stage("build"){
-            step {
+            steps {
                 echo "great ${IMAGE_NAME}"
             }
         }
 
         stage("test"){
-            step {
+            steps {
                 echo "test done"
             }
         }
