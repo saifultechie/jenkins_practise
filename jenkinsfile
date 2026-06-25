@@ -1,19 +1,70 @@
 pipeline {
     agent any 
-    environment{
+
+    parameters {
+
+        choice(
+            name: 'ENV',
+            choices: ['dev', 'staging', 'prod'],
+            description: 'Select environment'
+        )
+
+        booleanParam(
+            name: 'RUN_TESTS',
+            defaultValue: true,
+            description: 'Whether to run tests or not'
+        )
+
+        string(
+            name: 'VERSION',
+            defaultValue: '1.0.0',
+            description: 'Application version'
+        )
+    }
+
+    environment {
         IMAGE_NAME = "my-app"
     }
 
     stages {
-        stage("build"){
+
+        stage("Show Params") {
             steps {
-                echo "great ${IMAGE_NAME}"
+                echo "ENV = ${params.ENV}"
+                echo "RUN_TESTS = ${params.RUN_TESTS}"
+                echo "VERSION = ${params.VERSION}"
             }
         }
 
-        stage("test"){
+        stage("Build") {
             steps {
-                echo "test done"
+                script {
+                    def imageTag = "${IMAGE_NAME}:${params.VERSION}-${params.ENV}"
+                    echo "Building image: ${imageTag}"
+                }
+            }
+        }
+
+        stage("Test") {
+            when {
+                expression { params.RUN_TESTS == true }
+            }
+            steps {
+                echo "Running tests for ${params.ENV}"
+            }
+        }
+
+        stage("Deploy") {
+            steps {
+                script {
+                    if (params.ENV == "prod") {
+                        echo "Deploying to PRODUCTION 🚀"
+                    } else if (params.ENV == "staging") {
+                        echo "Deploying to STAGING"
+                    } else {
+                        echo "Deploying to DEV"
+                    }
+                }
             }
         }
     }
